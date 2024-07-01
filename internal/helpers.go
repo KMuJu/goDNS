@@ -1,5 +1,9 @@
 package internal
 
+import (
+	"net"
+)
+
 func getPrefixToNull(input []byte) ([]byte, int) {
 	output := make([]byte, len(input))
 	for i, b := range input {
@@ -44,4 +48,8 @@ func getValueFromPointer(input []byte, p [2]byte) []byte {
 		output = append(output, input[i])
 	}
 	return output
+}
+
+func ipFromBytes(input [4]byte) string {
+	return net.IPv4(input[0], input[1], input[2], input[3]).String()
 }

@@ -60,3 +60,10 @@ func TestPrefixToNull(t *testing.T) {
 		})
 	}
 }
+
+func TestIpFromBytes(t *testing.T) {
+	input := [4]byte{0xc0, 0x21, 0x0e, 0x1e}
+	output := ipFromBytes(input)
+	expected := "192.33.14.30"
+	assert.Equal(t, expected, output)
+}
