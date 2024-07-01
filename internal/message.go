@@ -87,29 +87,37 @@ func (m Message) Bytes() ([]byte, error) {
 	//
 	// Question
 	//
-	if !m.Question.empty {
-		// fmt.Printf("Question name %s\n", m.Question.qname)
-		// fmt.Printf("Buf %x\n", buf.Bytes())
-		// fmt.Printf("Actual string %x\n", []byte(m.Question.qname))
-		if err := binary.Write(buf, binary.BigEndian, []byte(m.Question.qname)); err != nil {
-			return []byte{}, errors.New("Error in writing qname")
-		}
-		if err := binary.Write(buf, binary.BigEndian, m.Question.qtype); err != nil {
-			return []byte{}, errors.New("Error in writing qtype")
-		}
-		if err := binary.Write(buf, binary.BigEndian, m.Question.qclass); err != nil {
-			return []byte{}, errors.New("Error in writing qclass")
+	for _, q := range m.Question {
+		if !q.empty {
+			// fmt.Printf("Question name %s\n", m.Question.qname)
+			// fmt.Printf("Buf %x\n", buf.Bytes())
+			// fmt.Printf("Actual string %x\n", []byte(m.Question.qname))
+			if err := binary.Write(buf, binary.BigEndian, []byte(q.qname)); err != nil {
+				return []byte{}, errors.New("Error in writing qname")
+			}
+			if err := binary.Write(buf, binary.BigEndian, q.qtype); err != nil {
+				return []byte{}, errors.New("Error in writing qtype")
+			}
+			if err := binary.Write(buf, binary.BigEndian, q.qclass); err != nil {
+				return []byte{}, errors.New("Error in writing qclass")
+			}
 		}
 	}
 
-	if err := WriteRR(buf, m.Answer); err != nil {
-		return []byte{}, errors.New("Error in writing Answer")
+	for _, a := range m.Answer {
+		if err := WriteRR(buf, a); err != nil {
+			return []byte{}, errors.New("Error in writing Answer")
+		}
 	}
-	if err := WriteRR(buf, m.Authority); err != nil {
-		return []byte{}, errors.New("Error in writing Authority")
+	for _, a := range m.Authority {
+		if err := WriteRR(buf, a); err != nil {
+			return []byte{}, errors.New("Error in writing Authority")
+		}
 	}
-	if err := WriteRR(buf, m.Additional); err != nil {
-		return []byte{}, errors.New("Error in writing Additional")
+	for _, a := range m.Additional {
+		if err := WriteRR(buf, a); err != nil {
+			return []byte{}, errors.New("Error in writing Additional")
+		}
 	}
 
 	return buf.Bytes(), nil
@@ -127,11 +135,13 @@ func ExampleMessage(id uint16) Message {
 	name := CompressSingleDomain("dns.google.com")
 	return Message{
 		Header: NewHeader(id, false, false, false, true, false, 0),
-		Question: Question{
-			empty:  false,
-			qname:  name,
-			qtype:  1,
-			qclass: 1,
+		Question: []Question{
+			{
+				empty:  false,
+				qname:  name,
+				qtype:  1,
+				qclass: 1,
+			},
 		},
 	}
 }

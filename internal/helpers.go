@@ -1,7 +1,5 @@
 package internal
 
-import "fmt"
-
 func getPrefixToNull(input []byte) ([]byte, int) {
 	output := make([]byte, len(input))
 	for i, b := range input {
@@ -14,7 +12,6 @@ func getPrefixToNull(input []byte) ([]byte, int) {
 }
 
 func getPointerOrLabels(input []byte) ([]byte, int) {
-	fmt.Printf("Input: %x\n", input)
 	if len(input) < 2 {
 		return input, len(input)
 	}

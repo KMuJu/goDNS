@@ -2,10 +2,10 @@ package internal
 
 type Message struct {
 	Header     Header
-	Question   Question
-	Answer     ResourceRecord
-	Authority  ResourceRecord
-	Additional ResourceRecord
+	Question   []Question
+	Answer     []ResourceRecord
+	Authority  []ResourceRecord
+	Additional []ResourceRecord
 }
 
 type Header struct {

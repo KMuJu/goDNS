@@ -8,10 +8,6 @@ import (
 var ()
 
 func Parse(response []byte) (Message, error) {
-	var qd Question
-	var an ResourceRecord
-	var ns ResourceRecord
-	var ar ResourceRecord
 	currLen := 12
 	if len(response) < 12 {
 		return Message{}, fmt.Errorf("Response must be more than 12 bytes (for header), but was %d", len(response))
@@ -20,42 +16,45 @@ func Parse(response []byte) (Message, error) {
 	if err != nil {
 		return Message{}, err
 	}
+	qd := make([]Question, h.qdcount)
+	an := make([]ResourceRecord, h.ancount)
+	ns := make([]ResourceRecord, h.nscount)
+	ar := make([]ResourceRecord, h.arcount)
 
 	fmt.Printf("Header: %+v\n", h)
 
-	if h.qdcount != 0 {
-		l := 0
-		qd, l, err = parseQuestion(response[currLen:])
+	for i := 0; i < int(h.qdcount); i++ {
+		q, l, err := parseQuestion(response[currLen:])
 		if err != nil {
 			return Message{}, err
 		}
+		qd[i] = q
 		currLen += l
 	}
 
-	if h.ancount != 0 {
-		l := 0
-		an, l, err = parseRR(response[currLen:])
+	for i := 0; i < int(h.ancount); i++ {
+		a, l, err := parseRR(response[currLen:])
 		if err != nil {
 			return Message{}, err
 		}
+		an[i] = a
+		currLen += l
+	}
+	for i := 0; i < int(h.nscount); i++ {
+		a, l, err := parseRR(response[currLen:])
+		if err != nil {
+			return Message{}, err
+		}
+		ns[i] = a
 		currLen += l
 	}
 
-	if h.nscount == 1 {
-		l := 0
-		ns, l, err = parseRR(response[currLen:])
+	for i := 0; i < int(h.arcount); i++ {
+		a, l, err := parseRR(response[currLen:])
 		if err != nil {
 			return Message{}, err
 		}
-		currLen += l
-	}
-
-	if h.arcount == 1 {
-		l := 0
-		ar, l, err = parseRR(response[12+currLen:])
-		if err != nil {
-			return Message{}, err
-		}
+		ar[i] = a
 		currLen += l
 	}
 
