@@ -21,3 +21,26 @@ func CompressSingleDomain(domain string) []byte {
 
 	return compressed
 }
+
+func DecompressSingleDomain(compressed []byte) string {
+	b := strings.Builder{}
+
+	index := 0
+	maxlen := len(compressed) - 1
+	for {
+		if index >= maxlen {
+			break
+		}
+		labelLen := int(compressed[index])
+		index++
+		for i := index; i < index+labelLen; i++ {
+			b.WriteByte(compressed[i])
+		}
+		index += labelLen
+		if index+1 < maxlen {
+			b.WriteByte('.')
+		}
+	}
+
+	return b.String()
+}
