@@ -7,7 +7,7 @@ import (
 
 const (
 	TYPE    = "udp"
-	ADDRESS = "8.8.8.8:53"
+	ADDRESS = "198.41.0.4:53"
 	PORT    = 53
 )
 
@@ -20,10 +20,12 @@ func QueryDomain() error {
 	}
 	defer conn.Close()
 
-	b, err := ExampleMessage(22).Bytes()
+	ex := ExampleMessage(22)
+	b, err := ex.Bytes()
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Flags: %d\n", ex.Header.flags)
 	_, err = conn.Write(b)
 	if err != nil {
 		return err
@@ -44,6 +46,11 @@ func QueryDomain() error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Header\n %+v\n", m.Header)
+	fmt.Printf("Question(%d)\n %+v\n", len(m.Question), m.Question)
+	fmt.Printf("Answer(%d)\n %s\n", len(m.Answer), m.Answer)
+	fmt.Printf("Authority(%d)\n %s\n", len(m.Authority), m.Authority)
+	fmt.Printf("Additional(%d)\n%s\n", len(m.Additional), m.Additional)
 
 	return err
 }

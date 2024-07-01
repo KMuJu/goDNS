@@ -129,7 +129,7 @@ func (m Message) String() string {
 func ExampleMessage(id uint16) Message {
 	name := CompressSingleDomain("dns.google.com")
 	return Message{
-		Header: NewHeader(id, false, false, false, true, false, 0),
+		Header: NewHeader(id, false, false, false, false, false, 0),
 		Question: []Question{
 			{
 				qname:  name,
@@ -138,4 +138,9 @@ func ExampleMessage(id uint16) Message {
 			},
 		},
 	}
+}
+
+func (rr ResourceRecord) String() string {
+	output := fmt.Sprintf("Name: %x\nt:%d class:%d ttl:%d rdlength:%d\nrdata: %x\n\n", rr.name, rr.t, rr.class, rr.ttl, rr.rdlength, rr.rdata)
+	return output
 }
