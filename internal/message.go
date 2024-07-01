@@ -126,8 +126,8 @@ func (m Message) String() string {
 	return fmt.Sprintf("%x", b)
 }
 
-func ExampleMessage(id uint16) Message {
-	name := CompressSingleDomain("dns.google.com")
+func ExampleMessage(id uint16, domain string) Message {
+	name := CompressSingleDomain(domain)
 	return Message{
 		Header: NewHeader(id, false, false, false, false, false, 0),
 		Question: []Question{
@@ -143,4 +143,13 @@ func ExampleMessage(id uint16) Message {
 func (rr ResourceRecord) String() string {
 	output := fmt.Sprintf("Name: %x\nt:%d class:%d ttl:%d rdlength:%d\nrdata: %x\n\n", rr.name, rr.t, rr.class, rr.ttl, rr.rdlength, rr.rdata)
 	return output
+}
+
+// returns true if the rcode of the header is not 0
+func (m Message) Error() bool {
+	return m.Header.flags&0xf != 0
+}
+
+func (rr ResourceRecord) getIp() string {
+	return ipFromBytes([4]byte(rr.rdata))
 }
