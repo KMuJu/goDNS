@@ -26,7 +26,7 @@ type Question struct {
 
 type ResourceRecord struct {
 	notempty bool
-	name     string
+	name     []byte
 	t        uint16
 	class    uint16
 	ttl      uint32

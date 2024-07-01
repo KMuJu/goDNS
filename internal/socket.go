@@ -35,19 +35,15 @@ func QueryDomain() error {
 		return err
 	}
 
-	h, err := ParseHeader(response[:12])
+	fmt.Printf("Received %d bytes response:\n%x\n", n, response[:n])
+	m, err := Parse(response[:n])
 	if err != nil {
 		return err
 	}
-	m := Message{
-		Header: h,
-	}
-
-	fmt.Printf("Received %d bytes response:\n%x\n", n, response[:n])
 	b, err = m.Bytes()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Message\n%x\n", b)
+
 	return err
 }
