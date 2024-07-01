@@ -18,14 +18,12 @@ type Header struct {
 }
 
 type Question struct {
-	empty  bool
 	qname  []byte
 	qtype  uint16
 	qclass uint16
 }
 
 type ResourceRecord struct {
-	notempty bool
 	name     []byte
 	t        uint16
 	class    uint16

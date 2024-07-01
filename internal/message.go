@@ -35,9 +35,6 @@ func NewHeader(id uint16, qr, aa, tc, rd, ra bool, rcode byte) Header {
 }
 
 func WriteRR(buf io.Writer, rr ResourceRecord) error {
-	if !rr.notempty {
-		return nil
-	}
 	if err := binary.Write(buf, binary.BigEndian, []byte(rr.name)); err != nil {
 		return err
 	}
@@ -88,19 +85,17 @@ func (m Message) Bytes() ([]byte, error) {
 	// Question
 	//
 	for _, q := range m.Question {
-		if !q.empty {
-			// fmt.Printf("Question name %s\n", m.Question.qname)
-			// fmt.Printf("Buf %x\n", buf.Bytes())
-			// fmt.Printf("Actual string %x\n", []byte(m.Question.qname))
-			if err := binary.Write(buf, binary.BigEndian, []byte(q.qname)); err != nil {
-				return []byte{}, errors.New("Error in writing qname")
-			}
-			if err := binary.Write(buf, binary.BigEndian, q.qtype); err != nil {
-				return []byte{}, errors.New("Error in writing qtype")
-			}
-			if err := binary.Write(buf, binary.BigEndian, q.qclass); err != nil {
-				return []byte{}, errors.New("Error in writing qclass")
-			}
+		// fmt.Printf("Question name %s\n", m.Question.qname)
+		// fmt.Printf("Buf %x\n", buf.Bytes())
+		// fmt.Printf("Actual string %x\n", []byte(m.Question.qname))
+		if err := binary.Write(buf, binary.BigEndian, []byte(q.qname)); err != nil {
+			return []byte{}, errors.New("Error in writing qname")
+		}
+		if err := binary.Write(buf, binary.BigEndian, q.qtype); err != nil {
+			return []byte{}, errors.New("Error in writing qtype")
+		}
+		if err := binary.Write(buf, binary.BigEndian, q.qclass); err != nil {
+			return []byte{}, errors.New("Error in writing qclass")
 		}
 	}
 
@@ -137,7 +132,6 @@ func ExampleMessage(id uint16) Message {
 		Header: NewHeader(id, false, false, false, true, false, 0),
 		Question: []Question{
 			{
-				empty:  false,
 				qname:  name,
 				qtype:  1,
 				qclass: 1,

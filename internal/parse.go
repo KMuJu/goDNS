@@ -21,8 +21,6 @@ func Parse(response []byte) (Message, error) {
 	ns := make([]ResourceRecord, h.nscount)
 	ar := make([]ResourceRecord, h.arcount)
 
-	fmt.Printf("Header: %+v\n", h)
-
 	for i := 0; i < int(h.qdcount); i++ {
 		q, l, err := parseQuestion(response[currLen:])
 		if err != nil {
@@ -95,7 +93,6 @@ func parseRR(a []byte) (ResourceRecord, int, error) {
 	rdlength := binary.BigEndian.Uint16(a[l+8 : l+10])
 	rdata := a[l+10 : l+10+int(rdlength)]
 	return ResourceRecord{
-		notempty: true,
 		name:     name,
 		t:        t,
 		class:    class,
@@ -113,7 +110,6 @@ func parseQuestion(q []byte) (Question, int, error) {
 	qtype := binary.BigEndian.Uint16(q[l : l+2])
 	qclass := binary.BigEndian.Uint16(q[l+2 : l+4])
 	return Question{
-		empty:  false,
 		qname:  qname,
 		qtype:  qtype,
 		qclass: qclass,
