@@ -6,7 +6,10 @@ import (
 	"os"
 )
 
-var OverMaxQueries = errors.New("Went over max queries")
+var (
+	OverMaxQueries = errors.New("Went over max queries")
+	cache          = make(map[string]string)
+)
 
 // Implements RFC1034 5.3.3
 func GetAddress(domain string) (string, error) {
@@ -44,7 +47,8 @@ func GetAddress(domain string) (string, error) {
 			return "", fmt.Errorf("Error in rcode of response %d", message.Header.flags&0xf)
 		}
 		if message.Header.ancount != 0 {
-			return message.Answer[0].getIp(), nil
+			ip := message.Answer[0].getIp()
+			return ip, nil
 		}
 		if message.Header.nscount != 0 && message.Header.arcount != 0 {
 			servers = getServers(message)
@@ -67,8 +71,13 @@ func GetAddress(domain string) (string, error) {
 	return servers[0], OverMaxQueries
 }
 
-func isCached(_ string) (string, bool) {
-	return "", false
+func isCached(domain string) (string, bool) {
+	ip, ok := cache[domain]
+	return ip, ok
+}
+
+func storeCache(domain, ip string) {
+	cache[domain] = ip
 }
 
 func getServers(m Message) []string {
