@@ -20,7 +20,7 @@ func QueryDomain(address string, mess Message) (Message, error) {
 		return Message{}, err
 	}
 	defer conn.Close()
-	err = conn.SetDeadline(time.Now().Add(time.Second))
+	err = conn.SetDeadline(time.Now().Add(time.Millisecond * 100))
 
 	b, err := mess.Bytes()
 	if err != nil {
