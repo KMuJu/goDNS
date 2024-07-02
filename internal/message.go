@@ -127,7 +127,7 @@ func (m Message) String() string {
 }
 
 func ExampleMessage(id uint16, domain string) Message {
-	name := CompressSingleDomain(domain)
+	name := CompressDomains(domain)
 	return Message{
 		Header: NewHeader(id, false, false, false, false, false, 0),
 		Question: []Question{
