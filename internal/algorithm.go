@@ -23,18 +23,19 @@ func GetAddress(domain string) (string, error) {
 	serverIndex := 0
 	for i := 0; i < maxMessages; i++ {
 		server := servers[serverIndex]
-		fmt.Printf("Sending to %s\n", server)
+		// fmt.Printf("Sending to %s\n", server)
+		fmt.Printf("Querying %s for %s\n", server, domain)
 		message, err := QueryDomain(server, mess)
 		if errors.Is(err, os.ErrDeadlineExceeded) {
-			fmt.Printf("Deadline exceeded\n")
+			// fmt.Printf("Deadline exceeded\n")
 			serverIndex = (serverIndex + 1) % len(servers)
 			continue
 		}
 		if err != nil {
 			return "", err
 		}
-		fmt.Printf("Received Message:\n")
-		fmt.Printf("Header %+v\n\n", message.Header)
+		// fmt.Printf("Received Message:\n")
+		// fmt.Printf("Header %+v\n\n", message.Header)
 		// fmt.Printf("Question(%d)\n%+v\n", len(message.Question), message.Question)
 		// fmt.Printf("Answer(%d)\n%s\n", len(message.Answer), message.Answer)
 		// fmt.Printf("Authority(%d)\n%s\n", len(message.Authority), message.Authority)
@@ -52,12 +53,12 @@ func GetAddress(domain string) (string, error) {
 		}
 		if message.Header.nscount != 0 && message.Header.arcount == 0 {
 			name := DecompressSingleDomain(message.Authority[0].rdata)
-			fmt.Printf("Starting new query for %s\n------\n\n", name)
+			// fmt.Printf("Starting new query for %s\n------\n\n", name)
 			s, err := GetAddress(name)
 			if err != nil {
 				return "IDK MAN", err
 			}
-			fmt.Printf("Result: %s-------\n", s)
+			// fmt.Printf("Result: %s\n-------\n", s)
 			servers = []string{s}
 			continue
 		}
