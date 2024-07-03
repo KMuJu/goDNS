@@ -141,7 +141,7 @@ func ExampleMessage(id uint16, domain string) Message {
 }
 
 func (rr ResourceRecord) String() string {
-	output := fmt.Sprintf("Name: %x\nt:%d class:%d ttl:%d rdlength:%d\nrdata: %x\n\n", rr.name, rr.t, rr.class, rr.ttl, rr.rdlength, rr.rdata)
+	output := fmt.Sprintf("Name: %x\ntype:%d class:%d ttl:%d rdlength:%d\nrdata: %x\n\n", rr.name, rr.t, rr.class, rr.ttl, rr.rdlength, rr.rdata)
 	return output
 }
 
