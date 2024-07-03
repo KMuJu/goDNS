@@ -3,39 +3,35 @@ package internal
 import (
 	"errors"
 	"fmt"
+	"net"
 	"os"
 )
 
 var (
 	OverMaxQueries = errors.New("Went over max queries")
-	cache          = make(map[string]string)
+	ADDRESS        = net.IPv4(0xc6, 0x29, 0x00, 0x04)
 )
 
 // Implements RFC1034 5.3.3
-func GetAddress(domain string) (string, error) {
+func GetAddress(domain string) (net.IP, error) {
 
-	cache, b := isCached(domain)
-	if b {
-		return cache, nil
-	}
-	servers := []string{ADDRESS}
+	servers := []net.IP{ADDRESS}
 
-	mess := ExampleMessage(22, domain)
+	mess := ExampleMessage(1, domain)
 
 	maxMessages := 15
 	serverIndex := 0
 	for i := 0; i < maxMessages; i++ {
 		server := servers[serverIndex]
-		// fmt.Printf("Sending to %s\n", server)
 		fmt.Printf("Querying %s for %s\n", server, domain)
 		message, err := QueryDomain(server, mess)
+		mess.Header.id++
 		if errors.Is(err, os.ErrDeadlineExceeded) {
-			// fmt.Printf("Deadline exceeded\n")
 			serverIndex = (serverIndex + 1) % len(servers)
 			continue
 		}
 		if err != nil {
-			return "", err
+			return net.IP{}, err
 		}
 		// fmt.Printf("Received Message:\n")
 		// fmt.Printf("Header %+v\n\n", message.Header)
@@ -44,12 +40,13 @@ func GetAddress(domain string) (string, error) {
 		// fmt.Printf("Authority(%d)\n%s\n", len(message.Authority), message.Authority)
 		// fmt.Printf("Additional(%d)\n%s\n", len(message.Additional), message.Additional)
 		if message.Error() {
-			return "", fmt.Errorf("Error in rcode of response %d", message.Header.flags&0xf)
+			return net.IP{}, fmt.Errorf("Error in rcode of response %d", message.Header.flags&0xf)
 		}
 		if message.Header.ancount != 0 {
-			ip := message.Answer[0].getIp()
+			ip := message.Answer[0].rdata
 			return ip, nil
 		}
+
 		if message.Header.nscount != 0 && message.Header.arcount != 0 {
 			servers = getServers(message)
 			serverIndex = 0
@@ -57,13 +54,11 @@ func GetAddress(domain string) (string, error) {
 		}
 		if message.Header.nscount != 0 && message.Header.arcount == 0 {
 			name := DecompressSingleDomain(message.Authority[0].rdata)
-			// fmt.Printf("Starting new query for %s\n------\n\n", name)
 			s, err := GetAddress(name)
 			if err != nil {
-				return "IDK MAN", err
+				return net.IP{}, err
 			}
-			// fmt.Printf("Result: %s\n-------\n", s)
-			servers = []string{s}
+			servers = []net.IP{s}
 			continue
 		}
 		break
@@ -71,19 +66,10 @@ func GetAddress(domain string) (string, error) {
 	return servers[0], OverMaxQueries
 }
 
-func isCached(domain string) (string, bool) {
-	ip, ok := cache[domain]
-	return ip, ok
-}
-
-func storeCache(domain, ip string) {
-	cache[domain] = ip
-}
-
-func getServers(m Message) []string {
-	output := make([]string, m.Header.arcount)
+func getServers(m Message) []net.IP {
+	output := make([]net.IP, m.Header.arcount)
 	for i, additional := range m.Additional {
-		output[i] = additional.getIp()
+		output[i] = additional.rdata
 	}
 	return output
 }

@@ -7,14 +7,15 @@ import (
 )
 
 const (
-	TYPE    = "udp"
-	ADDRESS = "198.41.0.4"
-	PORT    = 53
+	TYPE = "udp"
+
+	PORT = "53"
 )
 
-func QueryDomain(address string, mess Message) (Message, error) {
+func QueryDomain(address net.IP, mess Message) (Message, error) {
 
-	conn, err := net.Dial(TYPE, fmt.Sprintf("%s:53", address))
+	ip := net.JoinHostPort(address.String(), PORT)
+	conn, err := net.Dial(TYPE, ip)
 	if err != nil {
 		fmt.Printf("Could not connect to address\n%s\n", err.Error())
 		return Message{}, err
@@ -43,5 +44,5 @@ func QueryDomain(address string, mess Message) (Message, error) {
 		return Message{}, err
 	}
 
-	return m, err
+	return m, nil
 }
