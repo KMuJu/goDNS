@@ -21,23 +21,22 @@ func GetAddress(domain string) (net.IP, error) {
 
 	maxMessages := 15
 	for i := 0; i < maxMessages; i++ {
-		server, index := servers.getBestServer()
+		server := servers.getBestServer()
 		fmt.Printf("Querying %s for %s\n", server, domain)
 		response, err := QueryDomain(server, mess)
 		mess.Header.id++
 		if errors.Is(err, os.ErrDeadlineExceeded) {
-			servers.remove(index)
 			continue
 		}
 		if err != nil {
 			return net.IP{}, err
 		}
 		// fmt.Printf("Received Message:\n")
-		// fmt.Printf("Header %+v\n\n", message.Header)
-		// fmt.Printf("Question(%d)\n%+v\n", len(message.Question), message.Question)
-		// fmt.Printf("Answer(%d)\n%s\n", len(message.Answer), message.Answer)
-		// fmt.Printf("Authority(%d)\n%s\n", len(message.Authority), message.Authority)
-		// fmt.Printf("Additional(%d)\n%s\n", len(message.Additional), message.Additional)
+		// fmt.Printf("Header %+v\n\n", response.Header)
+		// fmt.Printf("Question(%d)\n%+v\n", len(response.Question), response.Question)
+		// fmt.Printf("Answer(%d)\n%s\n", len(response.Answer), response.Answer)
+		// fmt.Printf("Authority(%d)\n%s\n", len(response.Authority), response.Authority)
+		// fmt.Printf("Additional(%d)\n%s\n", len(response.Additional), response.Additional)
 		if response.Error() {
 			return net.IP{}, fmt.Errorf("Error in rcode of response %d", response.Header.flags&0xf)
 		}
@@ -65,7 +64,7 @@ func GetAddress(domain string) (net.IP, error) {
 		}
 		break
 	}
-	s, _ := servers.getBestServer()
+	s := servers.getBestServer()
 	return s, OverMaxQueries
 }
 

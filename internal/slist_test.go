@@ -56,7 +56,7 @@ func TestGetBestIP(t *testing.T) {
 		name       string
 		slist      sList
 		expectedip net.IP
-		index      int
+		size       int
 	}{
 		{
 			name: "two ips",
@@ -75,14 +75,14 @@ func TestGetBestIP(t *testing.T) {
 				target: "domain.com",
 			},
 			expectedip: net.IPv4(0, 0, 0, 1),
-			index:      1,
+			size:       1,
 		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			ip, index := tc.slist.getBestServer()
+			ip := tc.slist.getBestServer()
 			assert.Equal(t, tc.expectedip, ip)
-			assert.Equal(t, tc.index, index)
+			assert.Equal(t, tc.size, tc.slist.size) // makes sure that getbest server removes server
 		})
 	}
 }

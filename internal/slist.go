@@ -27,7 +27,7 @@ func newSlist(target string, ips []net.IP, domains []string) sList {
 	return sl
 }
 
-func (sl *sList) getBestServer() (net.IP, int) {
+func (sl *sList) getBestServer() net.IP {
 	maxscore, index := math.MinInt, -1
 
 	for i, s := range sl.servers {
@@ -36,8 +36,9 @@ func (sl *sList) getBestServer() (net.IP, int) {
 			index = i
 		}
 	}
+	sl.remove(index)
 
-	return sl.servers[index].ip, index
+	return sl.servers[index].ip
 }
 
 func (sl *sList) remove(index int) bool {
@@ -82,7 +83,7 @@ func score(target, input string) int {
 	tindex := len(tlabels) - 1
 	inindex := len(ilabels) - 1
 	score := 0
-	for tindex >= 0 || inindex >= 0 {
+	for tindex >= 0 && inindex >= 0 {
 		tlabel := tlabels[tindex]
 		ilabel := ilabels[inindex]
 		if tlabel != ilabel {
