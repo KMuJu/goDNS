@@ -82,10 +82,7 @@ func score(target, input string) int {
 	tindex := len(tlabels) - 1
 	inindex := len(ilabels) - 1
 	score := 0
-	for {
-		if tindex < 0 || inindex < 0 {
-			break
-		}
+	for tindex >= 0 || inindex >= 0 {
 		tlabel := tlabels[tindex]
 		ilabel := ilabels[inindex]
 		if tlabel != ilabel {
