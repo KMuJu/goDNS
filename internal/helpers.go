@@ -53,3 +53,12 @@ func getValueFromPointer(input []byte, p [2]byte) []byte {
 func ipFromBytes(input [4]byte) string {
 	return net.IPv4(input[0], input[1], input[2], input[3]).String()
 }
+
+func getDomainFromBytes(input []byte, name []byte) string {
+	output := name
+	if isPointer(name) {
+		output = getValueFromPointer(input, [2]byte(name))
+	}
+
+	return DecompressSingleDomain(output)
+}

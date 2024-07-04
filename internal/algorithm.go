@@ -47,7 +47,10 @@ func GetAddress(domain string) (net.IP, error) {
 		}
 
 		if response.Header.nscount != 0 && response.Header.arcount != 0 {
-			ips, domains := getServerAndDomain(response)
+			ips, domains, err := getServerAndDomain(response)
+			if err != nil {
+				return net.IP{}, fmt.Errorf("Could not get bytes from message")
+			}
 			servers = newSlist(domain, ips, domains)
 			continue
 		}
@@ -66,14 +69,18 @@ func GetAddress(domain string) (net.IP, error) {
 	return s, OverMaxQueries
 }
 
-func getServerAndDomain(m Message) ([]net.IP, []string) {
+func getServerAndDomain(m Message) ([]net.IP, []string, error) {
+	b, err := m.Bytes()
+	if err != nil {
+		return []net.IP{}, []string{}, err
+	}
 	minlen := min(int(m.Header.nscount), int(m.Header.arcount))
 	ips := make([]net.IP, minlen)
 	domains := make([]string, minlen)
 	for i := 0; i < minlen; i++ {
 		ips[i] = m.Additional[i].rdata
-		domains[i] = string(m.Authority[i].name)
+		domains[i] = getDomainFromBytes(b, m.Authority[i].name)
 	}
 
-	return ips, domains
+	return ips, domains, nil
 }
