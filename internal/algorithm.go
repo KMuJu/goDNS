@@ -15,19 +15,18 @@ var (
 // Implements RFC1034 5.3.3
 func GetAddress(domain string) (net.IP, error) {
 
-	servers := []net.IP{ADDRESS}
+	servers := newSlist(domain, []net.IP{ADDRESS}, []string{""})
 
 	mess := ExampleMessage(1, domain)
 
 	maxMessages := 15
-	serverIndex := 0
 	for i := 0; i < maxMessages; i++ {
-		server := servers[serverIndex]
+		server, index := servers.getBestServer()
 		fmt.Printf("Querying %s for %s\n", server, domain)
-		message, err := QueryDomain(server, mess)
+		response, err := QueryDomain(server, mess)
 		mess.Header.id++
 		if errors.Is(err, os.ErrDeadlineExceeded) {
-			serverIndex = (serverIndex + 1) % len(servers)
+			servers.remove(index)
 			continue
 		}
 		if err != nil {
@@ -39,31 +38,32 @@ func GetAddress(domain string) (net.IP, error) {
 		// fmt.Printf("Answer(%d)\n%s\n", len(message.Answer), message.Answer)
 		// fmt.Printf("Authority(%d)\n%s\n", len(message.Authority), message.Authority)
 		// fmt.Printf("Additional(%d)\n%s\n", len(message.Additional), message.Additional)
-		if message.Error() {
-			return net.IP{}, fmt.Errorf("Error in rcode of response %d", message.Header.flags&0xf)
+		if response.Error() {
+			return net.IP{}, fmt.Errorf("Error in rcode of response %d", response.Header.flags&0xf)
 		}
-		if message.Header.ancount != 0 {
-			ip := message.Answer[0].rdata
+		if response.Header.ancount != 0 {
+			ip := response.Answer[0].rdata
 			return ip, nil
 		}
 
-		if message.Header.nscount != 0 && message.Header.arcount != 0 {
-			servers = getServers(message)
-			serverIndex = 0
+		if response.Header.nscount != 0 && response.Header.arcount != 0 {
+			ips, domains := getServerAndDomain(response)
+			servers = newSlist(domain, ips, domains)
 			continue
 		}
-		if message.Header.nscount != 0 && message.Header.arcount == 0 {
-			name := DecompressSingleDomain(message.Authority[0].rdata)
+		if response.Header.nscount != 0 && response.Header.arcount == 0 {
+			name := DecompressSingleDomain(response.Authority[0].rdata)
 			s, err := GetAddress(name)
 			if err != nil {
 				return net.IP{}, err
 			}
-			servers = []net.IP{s}
+			servers = newSlist(domain, []net.IP{s}, []string{name})
 			continue
 		}
 		break
 	}
-	return servers[0], OverMaxQueries
+	s, _ := servers.getBestServer()
+	return s, OverMaxQueries
 }
 
 func getServers(m Message) []net.IP {
@@ -72,4 +72,20 @@ func getServers(m Message) []net.IP {
 		output[i] = additional.rdata
 	}
 	return output
+}
+
+func getServerAndDomain(m Message) ([]net.IP, []string) {
+	minlen := min(int(m.Header.nscount), int(m.Header.arcount))
+	ips := make([]net.IP, minlen)
+	domains := make([]string, minlen)
+	for i := 0; i < minlen; i++ {
+		ips[i] = m.Additional[i].rdata
+		domains[i] = string(m.Authority[i].name)
+	}
+
+	return ips, domains
+}
+
+func getBestServer(servers []net.IP, index int) net.IP {
+	return servers[index]
 }
