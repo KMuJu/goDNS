@@ -12,7 +12,7 @@ const (
 
 type sList struct {
 	servers [MAXSIZE]server
-	size    int
+	size    int // points to the next index to insert
 	target  string
 }
 
@@ -27,6 +27,7 @@ func newSlist(target string, ips []net.IP, domains []string) sList {
 	return sl
 }
 
+// gets the server with the highest score and removes it
 func (sl *sList) getBestServer() net.IP {
 	maxscore, index := math.MinInt, -1
 
@@ -41,6 +42,7 @@ func (sl *sList) getBestServer() net.IP {
 	return sl.servers[index].ip
 }
 
+// moves the element at the index to the back and shrinks size
 func (sl *sList) remove(index int) bool {
 	if sl.size == 0 {
 		return false
