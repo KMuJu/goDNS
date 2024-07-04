@@ -66,14 +66,6 @@ func GetAddress(domain string) (net.IP, error) {
 	return s, OverMaxQueries
 }
 
-func getServers(m Message) []net.IP {
-	output := make([]net.IP, m.Header.arcount)
-	for i, additional := range m.Additional {
-		output[i] = additional.rdata
-	}
-	return output
-}
-
 func getServerAndDomain(m Message) ([]net.IP, []string) {
 	minlen := min(int(m.Header.nscount), int(m.Header.arcount))
 	ips := make([]net.IP, minlen)
@@ -84,8 +76,4 @@ func getServerAndDomain(m Message) ([]net.IP, []string) {
 	}
 
 	return ips, domains
-}
-
-func getBestServer(servers []net.IP, index int) net.IP {
-	return servers[index]
 }
